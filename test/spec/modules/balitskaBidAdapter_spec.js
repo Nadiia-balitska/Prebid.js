@@ -4,7 +4,7 @@ import { spec } from "../../../modules/balitskaBidAdapter.js";
 const BID = {
   bidId: "test-bidid",
   mediaTypes: { banner: { sizes: [[300, 250]] } },
-  params: { placementId: "123" },
+  params: { placementId: "1234" },
 };
 
 const BIDDER_REQUEST = {

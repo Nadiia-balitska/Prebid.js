@@ -20,7 +20,9 @@
   "scripts": {
     "serve": "gulp serve",
     "test": "gulp test",
-    "lint": "gulp lint"
+    "lint": "gulp lint",
+      "feeds": "node scripts/fetchFeedsCron.cjs --now",
+  "feeds:watch": "node scripts/fetchFeedsCron.cjs --interval=15"
   },
   "repository": {
     "type": "git",

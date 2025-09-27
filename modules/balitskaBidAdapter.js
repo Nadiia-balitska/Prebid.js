@@ -13,36 +13,42 @@ export const spec = {
     const p = bid.params || {};
     return !!(p.placementId || p.endpoint)
   },
-  buildRequests(validBidRequests, bidderRequest) {
-    console.log("✅ buildRequests called:", validBidRequests);
+ buildRequests(validBidRequests, bidderRequest) {
+  console.log('✅ [balitska] buildRequests called:', {
+    count: validBidRequests?.length || 0,
+    bids: validBidRequests,
+    auctionId: bidderRequest?.auctionId,
+    page: bidderRequest?.refererInfo?.page
+  });
 
+  const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
 
-    const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
-    const payload = {
-      id: bidderRequest?.auctionId,
-      site: { page: bidderRequest?.refererInfo?.page },
-      device: { ua: navigator.userAgent },
-      regs: { gdpr: bidderRequest?.gdprConsent ? 1 : 0 },
-      user: bidderRequest?.gdprConsent
-        ? { consent: bidderRequest.gdprConsent.consentString }
-        : {},
-      imp: validBidRequests.map((bid) => ({
-        id: bid.bidId,
-        tagid: getBidIdParameter("placementId", bid.params),
-        banner: {
-          format: (bid.mediaTypes?.banner?.sizes || bid.sizes || []).map(
-            (s) => ({ w: s[0], h: s[1] })
-          ),
-        },
-      })),
-    };
-    return {
-      method: "POST",
-      url,
-      data: JSON.stringify(payload),
-      options: { contentType: "application/json" },
-    };
-  },
+  const payload = {
+    id: bidderRequest?.auctionId,
+    site: { page: bidderRequest?.refererInfo?.page },
+    device: { ua: (typeof navigator !== 'undefined' ? navigator.userAgent : '') },
+    regs: { gdpr: bidderRequest?.gdprConsent ? 1 : 0 },
+    user: bidderRequest?.gdprConsent
+      ? { consent: bidderRequest.gdprConsent.consentString }
+      : {},
+    imp: (validBidRequests || []).map(bid => ({
+      id: bid.bidId,                                      
+      tagid: (bid.params && bid.params.placementId) || '',/
+      banner: {
+        format: (bid.mediaTypes?.banner?.sizes || bid.sizes || [])
+          .map(s => ({ w: s[0], h: s[1] }))
+      }
+    }))
+  };
+
+  return {
+    method: 'POST',
+    url,
+    data: JSON.stringify(payload),
+    options: { contentType: 'application/json' }
+  };
+},
+
   interpretResponse(serverResponse) {
     const body = serverResponse?.body || {};
     const out = [];
