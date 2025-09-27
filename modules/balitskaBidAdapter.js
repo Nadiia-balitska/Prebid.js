@@ -11,9 +11,12 @@ export const spec = {
 
   isBidRequestValid(bid) {
     const p = bid.params || {};
-    return !!(p.placementId || p.endpoint); // мінімальна валідація
+    return !!(p.placementId || p.endpoint)
   },
   buildRequests(validBidRequests, bidderRequest) {
+    console.log("✅ buildRequests called:", validBidRequests);
+
+
     const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
     const payload = {
       id: bidderRequest?.auctionId,

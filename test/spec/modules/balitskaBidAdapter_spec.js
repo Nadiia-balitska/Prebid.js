@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { spec } from "../../../modules/balitskaBigAdapter.js";
+import { spec } from "../../../modules/balitskaBidAdapter.js";
 
 const BID = {
   bidId: "test-bidid",
