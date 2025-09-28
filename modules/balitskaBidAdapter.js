@@ -14,40 +14,39 @@ export const spec = {
   },
 
   buildRequests(validBidRequests, bidderRequest) {
-    // console.log("✅ [balitska] buildRequests called:", {
-    //   count: validBidRequests?.length || 0,
-    //   bids: validBidRequests,
-    //   auctionId: bidderRequest?.auctionId,
-    //   page: bidderRequest?.refererInfo?.page
-    // });
-
     const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
+
+    const imps = (validBidRequests || []).map((bid) => ({
+      id: bid.bidId,
+      tagid: bid.params?.placementId || "",
+      banner: {
+        format: (bid.mediaTypes?.banner?.sizes || bid.sizes || []).map(
+          ([w, h]) => ({ w, h })
+        ),
+      },
+    }));
 
     const payload = {
       id: bidderRequest?.auctionId,
-      site: { page: bidderRequest?.refererInfo?.page },
-      device: { ua: (typeof navigator !== "undefined" ? navigator.userAgent : "") },
-      regs: { gdpr: bidderRequest?.gdprConsent ? 1 : 0 },
-      user: bidderRequest?.gdprConsent
-        ? { consent: bidderRequest.gdprConsent.consentString }
-        : {},
-      imp: (validBidRequests || []).map(bid => ({
-        id: bid.bidId,
-        tagid: bid.params?.placementId || "",
-        banner: {
-          format: (bid.mediaTypes?.banner?.sizes || bid.sizes || []).map(s => ({
-            w: s[0],
-            h: s[1]
-          }))
-        }
-      }))
+      imp: imps,
+      site: bidderRequest?.refererInfo?.page
+        ? { page: bidderRequest.refererInfo.page }
+        : undefined,
+      tmax:
+        typeof bidderRequest?.timeout === "number"
+          ? bidderRequest.timeout
+          : undefined,
     };
+
+    const data = JSON.stringify(payload, (k, v) =>
+      v === undefined ? undefined : v
+    );
 
     return {
       method: "POST",
       url,
-      data: JSON.stringify(payload),
-      options: { contentType: "application/json" }
+      data,
+      options: { contentType: "application/json" },
     };
   },
 
@@ -55,8 +54,8 @@ export const spec = {
     const body = serverResponse?.body || {};
     const out = [];
 
-    (body.seatbid || []).forEach(seat => {
-      (seat.bid || []).forEach(b => {
+    (body.seatbid || []).forEach((seat) => {
+      (seat.bid || []).forEach((b) => {
         out.push({
           requestId: b.impid || b.bidId,
           cpm: Number(b.price || b.cpm || 0),
@@ -67,7 +66,7 @@ export const spec = {
           creativeId: b.crid || "balitska-crea",
           ttl: 180,
           netRevenue: true,
-          meta: { advertiserDomains: b.adomain || [] }
+          meta: { advertiserDomains: b.adomain || [] },
         });
       });
     });
@@ -77,8 +76,8 @@ export const spec = {
 
   getUserSyncs() {
     return [];
-  }
-}
+  },
+};
 
 registerBidder(spec);
 export default spec;
