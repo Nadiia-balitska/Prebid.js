@@ -1,6 +1,5 @@
 import { BANNER } from "../src/mediaTypes.js";
 import { registerBidder } from "../src/adapters/bidderFactory.js";
-import { getBidIdParameter } from "../src/utils.js";
 
 const BIDDER_CODE = "balitska";
 const AUCTION_PATH = "https://hb.balitska.com/openrtb2/auction";
