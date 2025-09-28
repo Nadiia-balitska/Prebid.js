@@ -10,49 +10,53 @@ export const spec = {
 
   isBidRequestValid(bid) {
     const p = bid.params || {};
-    return !!(p.placementId || p.endpoint)
+    return !!(p.placementId || p.endpoint);
   },
- buildRequests(validBidRequests, bidderRequest) {
-  console.log('✅ [balitska] buildRequests called:', {
-    count: validBidRequests?.length || 0,
-    bids: validBidRequests,
-    auctionId: bidderRequest?.auctionId,
-    page: bidderRequest?.refererInfo?.page
-  });
 
-  const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
+  buildRequests(validBidRequests, bidderRequest) {
+    // console.log("✅ [balitska] buildRequests called:", {
+    //   count: validBidRequests?.length || 0,
+    //   bids: validBidRequests,
+    //   auctionId: bidderRequest?.auctionId,
+    //   page: bidderRequest?.refererInfo?.page
+    // });
 
-  const payload = {
-    id: bidderRequest?.auctionId,
-    site: { page: bidderRequest?.refererInfo?.page },
-    device: { ua: (typeof navigator !== 'undefined' ? navigator.userAgent : '') },
-    regs: { gdpr: bidderRequest?.gdprConsent ? 1 : 0 },
-    user: bidderRequest?.gdprConsent
-      ? { consent: bidderRequest.gdprConsent.consentString }
-      : {},
-    imp: (validBidRequests || []).map(bid => ({
-      id: bid.bidId,                                      
-      tagid: (bid.params && bid.params.placementId) || '',/
-      banner: {
-        format: (bid.mediaTypes?.banner?.sizes || bid.sizes || [])
-          .map(s => ({ w: s[0], h: s[1] }))
-      }
-    }))
-  };
+    const url = validBidRequests[0]?.params?.endpoint || AUCTION_PATH;
 
-  return {
-    method: 'POST',
-    url,
-    data: JSON.stringify(payload),
-    options: { contentType: 'application/json' }
-  };
-},
+    const payload = {
+      id: bidderRequest?.auctionId,
+      site: { page: bidderRequest?.refererInfo?.page },
+      device: { ua: (typeof navigator !== "undefined" ? navigator.userAgent : "") },
+      regs: { gdpr: bidderRequest?.gdprConsent ? 1 : 0 },
+      user: bidderRequest?.gdprConsent
+        ? { consent: bidderRequest.gdprConsent.consentString }
+        : {},
+      imp: (validBidRequests || []).map(bid => ({
+        id: bid.bidId,
+        tagid: bid.params?.placementId || "",
+        banner: {
+          format: (bid.mediaTypes?.banner?.sizes || bid.sizes || []).map(s => ({
+            w: s[0],
+            h: s[1]
+          }))
+        }
+      }))
+    };
+
+    return {
+      method: "POST",
+      url,
+      data: JSON.stringify(payload),
+      options: { contentType: "application/json" }
+    };
+  },
 
   interpretResponse(serverResponse) {
     const body = serverResponse?.body || {};
     const out = [];
-    (body.seatbid || []).forEach((seat) => {
-      (seat.bid || []).forEach((b) => {
+
+    (body.seatbid || []).forEach(seat => {
+      (seat.bid || []).forEach(b => {
         out.push({
           requestId: b.impid || b.bidId,
           cpm: Number(b.price || b.cpm || 0),
@@ -63,7 +67,7 @@ export const spec = {
           creativeId: b.crid || "balitska-crea",
           ttl: 180,
           netRevenue: true,
-          meta: { advertiserDomains: b.adomain || [] },
+          meta: { advertiserDomains: b.adomain || [] }
         });
       });
     });
@@ -73,8 +77,8 @@ export const spec = {
 
   getUserSyncs() {
     return [];
-  },
-};
+  }
+}
 
 registerBidder(spec);
 export default spec;
