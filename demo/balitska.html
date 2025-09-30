@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Balitska Bidder – Prebid + GPT Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./balitska.css">
+
+  <script>
+    window.pbjs = window.pbjs || { que: [] };
+  </script>
+
+
+  <script src="./prebid.js"></script>
+
+  <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+</head>
+
+<body>
+  <h1 style="text-align:center;">🚀 Balitska Bidder Demo</h1>
+  <div id="div-gpt-ad-300x250">Ad slot</div>
+
+  <script>
+    window.googletag = window.googletag || { cmd: [] };
+    googletag.cmd.push(function () {
+      googletag.defineSlot('/1234567/demo', [[300, 250]], 'div-gpt-ad-300x250')
+        .addService(googletag.pubads());
+      googletag.pubads().disableInitialLoad();
+      googletag.enableServices();
+    });
+
+    const adUnits = [
+      {
+        code: 'div-gpt-ad-300x250',
+        mediaTypes: { banner: { sizes: [[300, 250]] } },
+        bids: [
+          {
+            bidder: 'balitska',
+            params: {
+              placementId: '12345' 
+            }
+          }
+        ]
+      }
+    ];
+
+    const PREBID_TIMEOUT = 1200;
+
+    pbjs.que.push(function () {
+      pbjs.addAdUnits(adUnits);
+      console.log("🚀 Ad units added:", adUnits);
+
+      pbjs.requestBids({
+        timeout: PREBID_TIMEOUT,
+        bidsBackHandler: function () {
+          console.log('Bids returned:', pbjs.getBidResponses());
+          pbjs.setTargetingForGPTAsync();
+          googletag.cmd.push(function () {
+            googletag.display('div-gpt-ad-300x250');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
